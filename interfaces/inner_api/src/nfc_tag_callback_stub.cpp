@@ -46,6 +46,10 @@ int NfcTagCallbackStub::OnRemoteRequest(
         HILOGE("Failed to `%{public}s`,Remote service is died!", __func__);
         return NFC_FAILED;
     }
+    if (data.ReadInterfaceToken() != GetDescriptor()) {
+        HILOGE("NfcTagCallbackStub::OnRemoteRequest GetDescriptor error.");
+        return NFC_FAILED;
+    }
     int exception = data.ReadInt32();
     if (exception) {
         HILOGE("NfcTagCallbackStub::OnRemoteRequest, got exception: %{public}d!", exception);
