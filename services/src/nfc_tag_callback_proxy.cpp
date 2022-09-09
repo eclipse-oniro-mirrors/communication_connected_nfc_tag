@@ -28,6 +28,9 @@ void NfcTagCallBackProxy::OnNotify(int nfcRfState)
     MessageOption option;
     MessageParcel data;
     MessageParcel reply;
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        return;
+    }
     data.WriteInt32(0);
     data.WriteInt32(nfcRfState);
 
