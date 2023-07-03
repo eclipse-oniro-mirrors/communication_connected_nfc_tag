@@ -38,8 +38,8 @@ ohos_shared_library("nfc_tag_service") {
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "c_utils:utils",
+    "hilog:libhilog",
     "hisysevent_native:libhisysevent",
-    "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
