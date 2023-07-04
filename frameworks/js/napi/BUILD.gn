@@ -29,7 +29,7 @@ ohos_shared_library("nfc_tag_napi") {
 
   external_deps = [
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "ipc:ipc_core",
     "napi:ace_napi",
   ]

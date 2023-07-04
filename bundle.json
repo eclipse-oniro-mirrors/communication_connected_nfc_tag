@@ -50,7 +50,14 @@
         "deps": {
             "components": [
                 "ipc",
-                "hiviewdfx_hilog_native"
+                "c_utils",
+                "hilog",
+                "ipc",
+                "napi",
+                "access_token",
+                "hisysevent_native",
+                "safwk",
+                "samgr"
             ],
             "third_party": [
             ]
