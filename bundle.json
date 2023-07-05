@@ -55,7 +55,7 @@
                 "ipc",
                 "napi",
                 "access_token",
-                "hisysevent_native",
+                "hisysevent",
                 "safwk",
                 "samgr"
             ],
