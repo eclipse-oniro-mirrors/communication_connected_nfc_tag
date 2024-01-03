@@ -71,7 +71,7 @@ int NfcTagCallbackStub::OnRemoteRequest(
 
 ErrCode NfcTagCallbackStub::RegisterUserCallBack(const sptr<INfcTagCallback> &callBack)
 {
-    std::shared_lock<std::shared_mutex> guard(callbackMutex);
+    std::unique_lock<std::shared_mutex> guard(callbackMutex);
     if (callBack == nullptr) {
         HILOGW("RegisterUserCallBack:callBack is nullptr!");
     }
