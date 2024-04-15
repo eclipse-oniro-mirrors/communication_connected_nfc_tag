@@ -1,5 +1,5 @@
 {
-    "name": "@ohos/communication_connected_nfc_tag",
+    "name": "@ohos/connected_nfc_tag",
     "version": "3.1",
     "description": "nfc service",
     "homePage": "https://gitee.com/openharmony",
