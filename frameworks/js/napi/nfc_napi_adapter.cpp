@@ -50,7 +50,7 @@ napi_value ReadNdefTag(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, &data));
-    HILOGI("ReadNdefTag argc = %{public}d", argc);
+    HILOGI("ReadNdefTag argc = %{public}zu", argc);
 
     ReadAsyncContext *asyncContext = new ReadAsyncContext(env);
     napi_create_string_latin1(env, "readNdefTag", NAPI_AUTO_LENGTH, &asyncContext->resourceName);
@@ -66,7 +66,7 @@ napi_value ReadNdefTag(napi_env env, napi_callback_info info)
     asyncContext->completeFunc = [&](void* data) -> void {
         ReadAsyncContext *context = static_cast<ReadAsyncContext *>(data);
         napi_create_string_utf8(context->env, context->respNdefData.c_str(), NAPI_AUTO_LENGTH, &context->result);
-        HILOGI("ReadNdefTag respNdefData=%{public}s, len = %{public}d",
+        HILOGI("ReadNdefTag respNdefData=%{public}s, len = %{public}zu",
             context->respNdefData.c_str(), context->respNdefData.length());
     };
 
@@ -88,7 +88,7 @@ napi_value WriteNdefTag(napi_env env, napi_callback_info info)
 
     std::string inputWrittenNdefData = "";
     ParseString(env, inputWrittenNdefData, argv[0]);
-    HILOGI("WriteNdefTag argc = %{public}d, data=%{public}s, len = %{public}d", argc,
+    HILOGI("WriteNdefTag argc = %{public}zu, data=%{public}s, len = %{public}zu", argc,
         inputWrittenNdefData.c_str(), inputWrittenNdefData.length());
     asyncContext->writtenNdefData = inputWrittenNdefData;
 

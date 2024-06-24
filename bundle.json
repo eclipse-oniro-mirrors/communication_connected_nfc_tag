@@ -52,12 +52,13 @@
                 "ipc",
                 "c_utils",
                 "hilog",
-                "ipc",
                 "napi",
                 "access_token",
                 "hisysevent",
                 "safwk",
-                "samgr"
+                "samgr",
+                "hdf_core",
+                "drivers_interface_connected_nfc_tag"
             ],
             "third_party": [
             ]
