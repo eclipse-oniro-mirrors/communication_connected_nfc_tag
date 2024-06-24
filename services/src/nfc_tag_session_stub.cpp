@@ -81,7 +81,7 @@ void NfcTagSessionStub::OnReadNdefTag(uint32_t code, MessageParcel &data, Messag
 void NfcTagSessionStub::OnWriteNdefTag(uint32_t code, MessageParcel &data, MessageParcel &reply)
 {
     std::string dataToWrite = data.ReadString();
-    HILOGI("run %{public}s datasize %{public}zu, str = %{public}s, len = %{public}d",
+    HILOGI("run %{public}s datasize %{public}zu, str = %{public}s, len = %{public}zu",
         __func__, data.GetRawDataSize(), dataToWrite.c_str(), dataToWrite.length());
 
     ErrCode ret = WriteNdefTag(dataToWrite);
