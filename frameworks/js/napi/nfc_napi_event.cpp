@@ -80,7 +80,7 @@ void NapiEvent::EventNotify(AsyncEventData *asyncEvent)
         return;
     }
 
-    HILOGI("Get the event loop, napi_env: %{public}p", asyncEvent->env);
+    HILOGI("Get the event loop");
     work->data = asyncEvent;
     uv_queue_work(
         loop, work, [](uv_work_t* work) {},
@@ -90,7 +90,7 @@ void NapiEvent::EventNotify(AsyncEventData *asyncEvent)
                 HILOGE("asyncData is null.");
                 return;
             }
-            HILOGI("Napi event uv_queue_work, env: %{public}p, status: %{public}d", asyncData->env, status);
+            HILOGI("Napi event uv_queue_work, status: %{public}d", status);
             napi_handle_scope scope = nullptr;
             napi_open_handle_scope(asyncData->env, &scope);
             if (scope == nullptr) {
@@ -103,7 +103,7 @@ void NapiEvent::EventNotify(AsyncEventData *asyncEvent)
             napi_value handler = nullptr;
             napi_get_reference_value(asyncData->env, asyncData->callbackRef, &handler);
 
-            HILOGI("Push event to js, env: %{public}p, ref : %{public}p", asyncData->env, &asyncData->callbackRef);
+            HILOGI("Push event to js");
             if (napi_call_function(asyncData->env, nullptr, handler, 1, &asyncData->jsEvent, &undefine) != napi_ok) {
                 HILOGE("Report event to Js failed");
             }
@@ -241,7 +241,7 @@ bool EventRegister::IsEventSupport(const std::string& type)
 
 void EventRegister::Register(const napi_env& env, const std::string& type, napi_value handler)
 {
-    HILOGI("Register event: %{public}s, env: %{public}p", type.c_str(), env);
+    HILOGI("Register event: %{public}s", type.c_str());
 
     if (!IsEventSupport(type)) {
         HILOGE("Register type error or not support!");
@@ -293,7 +293,7 @@ void EventRegister::DeleteAllRegisterObj(std::vector<RegObj>& vecRegObjs)
 
 void EventRegister::Unregister(const napi_env& env, const std::string& type, napi_value handler)
 {
-    HILOGI("Unregister event: %{public}s, env: %{public}p", type.c_str(), env);
+    HILOGI("Unregister event: %{public}s", type.c_str());
 
     if (!IsEventSupport(type)) {
         HILOGE("Unregister type error or not support!");
