@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,157 +12,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#define LOG_TAG "NFCTAG_FWK_NAPI"
 #include "nfc_napi_utils.h"
+#include "nfc_tag_log.h"
 #include "securec.h"
-#include "log.h"
+#include "nfc_tag_errcode.h"
 
 namespace OHOS {
 namespace NFC {
-TraceFuncCall::TraceFuncCall(const std::string funcName): m_funcName(funcName)
-{
-    if (m_isTrace) {
-        m_startTime = std::chrono::steady_clock::now();
-        HILOGD("Call func: %{public}s (start)", m_funcName.c_str());
-    }
-}
 
-TraceFuncCall::~TraceFuncCall()
-{
-    if (m_isTrace) {
-        auto us = std::chrono::duration_cast<std::chrono::microseconds>
-            (std::chrono::steady_clock::now() - m_startTime).count();
-        constexpr int usForPerMs = 1000;
-        HILOGD("Call func: %{public}s (end), time cost:%{public}lldus, %{public}lldms",
-            m_funcName.c_str(), us, us / usForPerMs);
-    }
-}
+static constexpr int BUSI_ERR_PERM = 201; // Permission denied.
+static constexpr int BUSI_ERR_PARAM = 401; // The parameter check failed.
+static constexpr int BUSI_ERR_CAPABILITY = 801; // Capability not supported.
+static constexpr int BUSI_ERR_NFC_STATE_INVALID = 3200101; // Connected NFC tag running state is abnormal in service.
 
-napi_value UndefinedNapiValue(const napi_env& env)
+const static std::string KEY_CODE = "code";
+const std::string NFC_PERM_DESC = "ohos.permission.NFC_TAG";
+static constexpr int ARGS_TWO = 2;
+
+#define NAPI_NFCTAG_CALL_RETURN(func)                                      \
+    do {                                                                   \
+        napi_status ret = (func);                                          \
+        if (ret != napi_ok) {                                              \
+            HILOGE("napi call function failed. ret:%{public}d", ret);      \
+            return ret;                                                    \
+        }                                                                  \
+    } while (0)
+
+napi_value CreateUndefined(napi_env env)
 {
-    napi_value result;
-    napi_get_undefined(env, &result);
+    napi_value result = nullptr;
+    NAPI_CALL(env, napi_get_undefined(env, &result));
     return result;
-}
-
-napi_value JsObjectToInt(const napi_env& env, const napi_value& object, const char* fieldStr, int& fieldRef)
-{
-    bool hasProperty = false;
-    NAPI_CALL(env, napi_has_named_property(env, object, fieldStr, &hasProperty));
-    if (hasProperty) {
-        napi_value field;
-        napi_valuetype valueType;
-
-        napi_get_named_property(env, object, fieldStr, &field);
-        NAPI_CALL(env, napi_typeof(env, field, &valueType));
-        NAPI_ASSERT(env, valueType == napi_number, "Wrong argument type. Number expected.");
-        napi_get_value_int32(env, field, &fieldRef);
-    } else {
-        HILOGW("Js to int no property: %{public}s", fieldStr);
-    }
-    return UndefinedNapiValue(env);
-}
-
-napi_value JsObjectToBool(const napi_env& env, const napi_value& object, const char* fieldStr, bool& fieldRef)
-{
-    bool hasProperty = false;
-    NAPI_CALL(env, napi_has_named_property(env, object, fieldStr, &hasProperty));
-    if (hasProperty) {
-        napi_value field;
-        napi_valuetype valueType;
-
-        napi_get_named_property(env, object, fieldStr, &field);
-        NAPI_CALL(env, napi_typeof(env, field, &valueType));
-        NAPI_ASSERT(env, valueType == napi_boolean, "Wrong argument type. Bool expected.");
-        napi_get_value_bool(env, field, &fieldRef);
-    } else {
-        HILOGW("Js to bool no property: %{public}s", fieldStr);
-    }
-    return UndefinedNapiValue(env);
-}
-
-napi_status SetValueUtf8String(const napi_env& env, const char* fieldStr, const char* str, napi_value& result)
-{
-    napi_value value;
-    napi_status status = napi_create_string_utf8(env, str, NAPI_AUTO_LENGTH, &value);
-    if (status != napi_ok) {
-        HILOGE("Set value create utf8 string error! field: %{public}s", fieldStr);
-        return status;
-    }
-    status = napi_set_named_property(env, result, fieldStr, value);
-    if (status != napi_ok) {
-        HILOGE("Set utf8 string named property error! field: %{public}s", fieldStr);
-    }
-    return status;
-}
-
-napi_status SetValueInt32(const napi_env& env, const char* fieldStr, const int intValue, napi_value& result)
-{
-    napi_value value;
-    napi_status status = napi_create_int32(env, intValue, &value);
-    if (status != napi_ok) {
-        HILOGE("Set value create int32 error! field: %{public}s", fieldStr);
-        return status;
-    }
-    status = napi_set_named_property(env, result, fieldStr, value);
-    if (status != napi_ok) {
-        HILOGE("Set int32 named property error! field: %{public}s", fieldStr);
-    }
-    return status;
-}
-
-napi_status SetValueUnsignedInt32(const napi_env& env, const char* fieldStr, const int intValue, napi_value& result)
-{
-    napi_value value;
-    napi_status status = napi_create_uint32(env, intValue, &value);
-    if (status != napi_ok) {
-        HILOGE("Set value create unsigned int32 error! field: %{public}s", fieldStr);
-        return status;
-    }
-    status = napi_set_named_property(env, result, fieldStr, value);
-    if (status != napi_ok) {
-        HILOGE("Set unsigned int32 named property error! field: %{public}s", fieldStr);
-    }
-    return status;
-}
-
-napi_status SetValueInt64(const napi_env& env, const char* fieldStr, const int64_t intValue, napi_value& result)
-{
-    napi_value value;
-    napi_status status = napi_create_int64(env, intValue, &value);
-    if (status != napi_ok) {
-        HILOGE("Set value create int64 error! field: %{public}s", fieldStr);
-        return status;
-    }
-    status = napi_set_named_property(env, result, fieldStr, value);
-    if (status != napi_ok) {
-        HILOGE("Set int64 named property error! field: %{public}s", fieldStr);
-    }
-    return status;
-}
-
-napi_status SetValueBool(const napi_env& env, const char* fieldStr, const bool boolvalue, napi_value& result)
-{
-    napi_value value;
-    napi_status status = napi_get_boolean(env, boolvalue, &value);
-    if (status != napi_ok) {
-        HILOGE("Set value create boolean error! field: %{public}s", fieldStr);
-        return status;
-    }
-    status = napi_set_named_property(env, result, fieldStr, value);
-    if (status != napi_ok) {
-        HILOGE("Set boolean named property error! field: %{public}s", fieldStr);
-    }
-    return status;
 }
 
 static napi_value InitAsyncCallBackEnv(const napi_env& env, AsyncContext *asyncContext,
     const size_t argc, const napi_value *argv, const size_t nonCallbackArgNum)
 {
-    for (size_t i = nonCallbackArgNum; i != argc; ++i) {
-        napi_valuetype valuetype;
-        NAPI_CALL(env, napi_typeof(env, argv[i], &valuetype));
-        NAPI_ASSERT(env, valuetype == napi_function, "Wrong argument type. Function expected.");
-        napi_create_reference(env, argv[i], 1, &asyncContext->callback[i - nonCallbackArgNum]);
+    if (nonCallbackArgNum < argc) {
+        napi_valuetype valueType;
+        NAPI_CALL(env, napi_typeof(env, argv[nonCallbackArgNum], &valueType));
+        NAPI_ASSERT(env, valueType == napi_function, "Wrong argument type. Function expected.");
+        napi_create_reference(env, argv[nonCallbackArgNum], 1, &asyncContext->callback_);
     }
     return nullptr;
 }
@@ -171,7 +62,7 @@ static napi_value InitAsyncPromiseEnv(const napi_env& env, AsyncContext *asyncCo
 {
     napi_deferred deferred;
     NAPI_CALL(env, napi_create_promise(env, &deferred, &promise));
-    asyncContext->deferred = deferred;
+    asyncContext->deferred_ = deferred;
     return nullptr;
 }
 
@@ -180,14 +71,14 @@ static napi_value DoCallBackAsyncWork(const napi_env& env, AsyncContext *asyncCo
     napi_create_async_work(
         env,
         nullptr,
-        asyncContext->resourceName,
+        asyncContext->resourceName_,
         [](napi_env env, void* data) {
             if (data == nullptr) {
                 HILOGE("Async data parameter is null");
                 return;
             }
             AsyncContext *context = static_cast<AsyncContext *>(data);
-            context->executeFunc(context);
+            context->executeFunc_(context);
         },
         [](napi_env env, napi_status status, void* data) {
             if (data == nullptr) {
@@ -195,38 +86,26 @@ static napi_value DoCallBackAsyncWork(const napi_env& env, AsyncContext *asyncCo
                 return;
             }
             AsyncContext *context = static_cast<AsyncContext *>(data);
-            napi_value undefine;
-            napi_get_undefined(env, &undefine);
+            context->completeFunc_(data);
+            napi_value undefined;
+            napi_get_undefined(env, &undefined);
             napi_value callback;
-            context->completeFunc(data);
-            constexpr int ARGS_TWO = 2;
-            napi_value result[ARGS_TWO] = {nullptr};
-            napi_create_uint32(env, context->errorCode, &result[0]);
-            result[1] = context->result;
-            if (context->errorCode == ERR_CODE_SUCCESS) {
-                napi_get_reference_value(env, context->callback[0], &callback);
-                napi_call_function(env, nullptr, callback, ARGS_TWO, result, &undefine);
-            } else {
-                if (context->callback[1]) {
-                    napi_get_reference_value(env, context->callback[1], &callback);
-                    napi_call_function(env, nullptr, callback, ARGS_TWO, result, &undefine);
-                } else {
-                    HILOGE("Get callback func[1] is null");
-                }
+            napi_value callbackValues[ARGS_TWO] = {nullptr};
+            napi_value result = nullptr;
+            callbackValues[0] = context->errorCode_ == NFC_SUCCESS ? undefined : context->result_;
+            callbackValues[1] = context->errorCode_ == NFC_SUCCESS ? context->result_ : undefined;
+            napi_get_reference_value(env, context->callback_, &callback);
+            napi_call_function(env, nullptr, callback, ARGS_TWO, callbackValues, &result);
+            if (context->callback_ != nullptr) {
+                napi_delete_reference(env, context->callback_);
             }
-            if (context->callback[0] != nullptr) {
-                napi_delete_reference(env, context->callback[0]);
-            }
-            if (context->callback[1] != nullptr) {
-                napi_delete_reference(env, context->callback[1]);
-            }
-            napi_delete_async_work(env, context->work);
+            napi_delete_async_work(env, context->work_);
             delete context;
         },
         (void *)asyncContext,
-        &asyncContext->work);
-    NAPI_CALL(env, napi_queue_async_work(env, asyncContext->work));
-    return UndefinedNapiValue(env);
+        &asyncContext->work_);
+    NAPI_CALL(env, napi_queue_async_work(env, asyncContext->work_));
+    return CreateUndefined(env);
 }
 
 static napi_value DoPromiseAsyncWork(const napi_env& env, AsyncContext *asyncContext)
@@ -234,14 +113,14 @@ static napi_value DoPromiseAsyncWork(const napi_env& env, AsyncContext *asyncCon
     napi_create_async_work(
         env,
         nullptr,
-        asyncContext->resourceName,
+        asyncContext->resourceName_,
         [](napi_env env, void *data) {
             if (data == nullptr) {
                 HILOGE("Async data parameter is null");
                 return;
             }
             AsyncContext *context = static_cast<AsyncContext *>(data);
-            context->executeFunc(context);
+            context->executeFunc_(context);
         },
         [](napi_env env, napi_status status, void *data) {
             if (data == nullptr) {
@@ -249,19 +128,19 @@ static napi_value DoPromiseAsyncWork(const napi_env& env, AsyncContext *asyncCon
                 return;
             }
             AsyncContext *context = static_cast<AsyncContext *>(data);
-            context->completeFunc(data);
-            if (context->errorCode == ERR_CODE_SUCCESS) {
-                napi_resolve_deferred(context->env, context->deferred, context->result);
+            context->completeFunc_(data);
+            if (context->errorCode_ == NFC_SUCCESS) {
+                napi_resolve_deferred(context->env_, context->deferred_, context->result_);
             } else {
-                napi_reject_deferred(context->env, context->deferred, context->result);
+                napi_reject_deferred(context->env_, context->deferred_, context->result_);
             }
-            napi_delete_async_work(env, context->work);
+            napi_delete_async_work(env, context->work_);
             delete context;
         },
         (void *)asyncContext,
-        &asyncContext->work);
-    napi_queue_async_work(env, asyncContext->work);
-    return UndefinedNapiValue(env);
+        &asyncContext->work_);
+    napi_queue_async_work(env, asyncContext->work_);
+    return CreateUndefined(env);
 }
 
 napi_value DoAsyncWork(const napi_env& env, AsyncContext *asyncContext,
@@ -304,5 +183,135 @@ bool ParseString(napi_env env, std::string &param, napi_value args)
     }
     return true;
 }
+
+napi_status ParseByteArray(napi_env env, napi_value array, std::vector<uint8_t> &outVec)
+{
+    bool isArray = false;
+    napi_status status = napi_is_array(env, array, &isArray);
+    if (!isArray || status != napi_ok) {
+        HILOGE("not array");
+        return napi_invalid_arg;
+    }
+    std::vector<uint8_t> vec {};
+    uint32_t length = 0;
+    NAPI_NFCTAG_CALL_RETURN(napi_get_array_length(env, array, &length));
+    for (uint32_t i = 0; i < length; ++i) {
+        napi_value element;
+        NAPI_NFCTAG_CALL_RETURN(napi_get_element(env, array, i, &element));
+        int32_t result = 0;
+        NAPI_NFCTAG_CALL_RETURN(napi_get_value_int32(env, element, &result));
+        if (result > 0xFF || result < 0) {
+            return napi_invalid_arg;
+        }
+        vec.emplace_back(static_cast<uint8_t>(result));
+    }
+    outVec = std::move(vec);
+    return napi_ok;
+}
+
+napi_value CreateNumberArray(napi_env env, const std::vector<uint8_t> &outVec)
+{
+    napi_value jsArray = nullptr;
+    napi_create_array(env, &jsArray);
+    for (size_t i = 0; i < outVec.size(); ++i) {
+        napi_value element;
+        napi_create_int32(env, static_cast<int32_t>(outVec[i]), &element);
+        napi_set_element(env, jsArray, i, element);
+    }
+    return jsArray;
+}
+
+std::string BuildErrorMessage(int errCode)
+{
+    std::string errMsg;
+    switch (errCode) {
+        case BUSI_ERR_PERM:
+            errMsg.append("Permission denied. ")
+                .append("forbidden by permission: ")
+                .append(NFC_PERM_DESC)
+                .append(".");
+            break;
+        case BUSI_ERR_PARAM:
+            errMsg = "Parameter error. The parameter number is invalid.";
+            break;
+        case BUSI_ERR_CAPABILITY:
+            errMsg = "Capability not supported.";
+            break;
+        case BUSI_ERR_NFC_STATE_INVALID:
+            errMsg = "Connected NFC tag running state is abnormal in service.";
+            break;
+        default:
+            errMsg = "Unknown error message.";
+            break;
+    }
+    return errMsg;
+}
+
+napi_value GenerateBusinessError(const napi_env &env, int errCode, const std::string &errMessage)
+{
+    napi_value code = nullptr;
+    napi_create_int32(env, errCode, &code);
+    napi_value message = nullptr;
+    napi_create_string_utf8(env, errMessage.c_str(), NAPI_AUTO_LENGTH, &message);
+    napi_value businessError = nullptr;
+    napi_create_error(env, code, message, &businessError);
+    napi_set_named_property(env, businessError, KEY_CODE.c_str(), code);
+    return businessError;
+}
+
+int FormatErrorCode(ErrCode statusCode)
+{
+    int resultCode = 0;
+    switch (statusCode) {
+        case NFC_SUCCESS:
+            resultCode = 0;
+            break;
+        case NFC_GRANT_FAILED:
+            resultCode = BUSI_ERR_PERM;
+            break;
+        case NFC_SYS_PERM_FAILED:
+            resultCode = BUSI_ERR_CAPABILITY;
+            break;
+        case NFC_INVALID_PARAMETER:
+            resultCode = BUSI_ERR_PARAM;
+            break;
+        default:
+            resultCode = BUSI_ERR_NFC_STATE_INVALID;
+            break;
+    }
+    return resultCode;
+}
+
+napi_value CheckNfcStatusCodeAndThrow(const napi_env &env, ErrCode statusCode)
+{
+    napi_value result = nullptr;
+    switch (statusCode) {
+        case NFC_SUCCESS:
+            result = CreateUndefined(env);
+            break;
+        case NFC_GRANT_FAILED:
+            result = GenerateBusinessError(env, BUSI_ERR_PERM,
+                BuildErrorMessage(BUSI_ERR_PERM));
+            napi_throw(env, result);
+            break;
+        case NFC_SYS_PERM_FAILED:
+            result = GenerateBusinessError(env, BUSI_ERR_CAPABILITY,
+                BuildErrorMessage(BUSI_ERR_CAPABILITY));
+            napi_throw(env, result);
+            break;
+        case NFC_INVALID_PARAMETER:
+            result = GenerateBusinessError(env, BUSI_ERR_PARAM,
+                BuildErrorMessage(BUSI_ERR_PARAM));
+            napi_throw(env, result);
+            break;
+        default:
+            result = GenerateBusinessError(env, BUSI_ERR_NFC_STATE_INVALID,
+                BuildErrorMessage(BUSI_ERR_NFC_STATE_INVALID));
+            napi_throw(env, result);
+            break;
+    }
+    return result;
+}
+
 }  // namespace NFC
 }  // namespace OHOS

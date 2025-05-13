@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Huawei Device Co., Ltd.
+# Copyright (C) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,37 +13,103 @@
 
 import("//build/ohos.gni")
 import("//build/ohos_var.gni")
+import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
-ROOT = "//foundation/communication/connected_nfc_tag"
+nfc_tag_service_cflags_cc = [
+  "-fPIC",
+  "-fdata-sections",
+  "-fno-exceptions",
+  "-ffunction-sections",
+  "-Oz",
+  "-flto",
+  "-Wno-unused-parameter",
+  "-Wunused-private-field",
+]
+
+nfc_tag_service_source = [
+    "src/nfc_tag_callback_proxy.cpp",
+    "src/nfc_tag_service.cpp",
+    "src/nfc_tag_stub.cpp",
+    "src/nfc_tag_utils.cpp",
+]
+
+if (connected_nfc_tag_only_system_app_access_api) {
+  nfc_tag_service_source += [
+    "src/nfc_tag_sys_perm.cpp"
+  ]
+}
+
+nfc_tag_service_include_dirs = [
+  "$NFC_TAG_DIR/interfaces/inner_api/include",
+  "$NFC_TAG_DIR/services/src/hdi/include",
+  "include",
+]
+
+nfc_tag_service_external_deps = [
+  "access_token:libaccesstoken_sdk",
+  "access_token:libtokenid_sdk",
+  "c_utils:utils",
+  "hilog:libhilog",
+  "ipc:ipc_core",
+  "safwk:system_ability_fwk",
+  "samgr:samgr_proxy",
+]
 
 ohos_shared_library("nfc_tag_service") {
-  include_dirs = [
-    "$ROOT/interfaces/inner_api/include",
-    "$ROOT/services/src/hdi/include",
-    "include",
-  ]
+  cflags_cc = nfc_tag_service_cflags_cc
+  defines = [ "NFC_TAG_HILOG" ]
+  sanitize = {
+    cfi = true
+    boundary_sanitize = true
+    integer_overflow = true
+    cfi_cross_dso = true
+    debug = false
+    ubsan = true
+    cfi_vcall_icall_only = true
+  }
+  branch_protector_ret = "pac_ret"
 
-  sources = [
-    "src/nfc_tag_callback_proxy.cpp",
-    "src/nfc_tag_service_impl.cpp",
-    "src/nfc_tag_session_stub.cpp",
-    "src/permission_tools.cpp",
-  ]
+  # Used to control the export of dynamic library symbols.
+  version_script = "libnfc_tag_service_version_script.txt"
+
+  include_dirs = nfc_tag_service_include_dirs
+
+  sources = nfc_tag_service_source
 
   deps = [
-    "$ROOT/services/etc/init:etc",
-    "$ROOT/services/src/hdi:nfc_tag_hdi_adapter",
+    "$NFC_TAG_DIR/services/etc/init:etc",
+    "$NFC_TAG_DIR/services/src/hdi:nfc_tag_hdi_adapter",
   ]
 
-  external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "c_utils:utils",
-    "hilog:libhilog",
-    "hisysevent:libhisysevent",
-    "ipc:ipc_core",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
+  external_deps = nfc_tag_service_external_deps
+
+  part_name = "connected_nfc_tag"
+  subsystem_name = "communication"
+}
+
+ohos_static_library("nfc_tag_service_static") {
+  cflags_cc = nfc_tag_service_cflags_cc
+  defines = [ "NFC_TAG_HILOG" ]
+  sanitize = {
+    cfi = true
+    boundary_sanitize = true
+    integer_overflow = true
+    cfi_cross_dso = true
+    debug = false
+    ubsan = true
+    cfi_vcall_icall_only = true
+  }
+  branch_protector_ret = "pac_ret"
+
+  include_dirs = nfc_tag_service_include_dirs
+
+  sources = nfc_tag_service_source
+
+  deps = [
+    "$NFC_TAG_DIR/services/src/hdi:nfc_tag_hdi_adapter",
   ]
+
+  external_deps = nfc_tag_service_external_deps
 
   part_name = "connected_nfc_tag"
   subsystem_name = "communication"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 #ifndef OHOS_NFC_TAG_CALLBACK_PROXY_H
 #define OHOS_NFC_TAG_CALLBACK_PROXY_H
 
-#include "define.h"
+#include "nfc_tag_errcode.h"
 #include "infc_tag_callback.h"
 #include "iremote_proxy.h"
 
@@ -26,7 +26,7 @@ public:
     explicit NfcTagCallBackProxy(const sptr<IRemoteObject> &remote);
     virtual ~NfcTagCallBackProxy() {}
 
-    void OnNotify(int nfcRfState) override;
+    ErrCode OnNotify(int nfcRfState) override;
 private:
     static inline BrokerDelegator<NfcTagCallBackProxy> g_delegator;
 };

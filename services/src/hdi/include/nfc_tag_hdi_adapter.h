@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,23 +16,42 @@
 #define OHOS_NFC_TAG_HDI_ADAPTER_H
 
 #include <string>
+#include <vector>
+#include <cstdint>
+#include <mutex>
+
+#include "infc_tag_callback.h"
+#include "nfc_tag_errcode.h"
 
 namespace OHOS {
 namespace NFC {
 class NfcTagHdiAdapter {
 public:
+    NfcTagHdiAdapter();
     ~NfcTagHdiAdapter();
     static NfcTagHdiAdapter &GetInstance();
 
-    int32_t Init();
+    ErrCode Init();
 
-    int32_t Uninit();
+    ErrCode Uninit();
 
-    std::string ReadNdefTag();
+    ErrCode ReadNdefTag(std::string &data);
 
-    int32_t WriteNdefTag(std::string data);
+    ErrCode WriteNdefTag(const std::string &data);
+
+    ErrCode ReadNdefData(std::vector<uint8_t> &data);
+
+    ErrCode WriteNdefData(const std::vector<uint8_t> &data);
+
+    ErrCode RegisterCallBack(sptr<INfcTagCallback> listener);
+
+    ErrCode UnRegisterCallBack(sptr<INfcTagCallback> listener);
+
 private:
-    NfcTagHdiAdapter();
+    class Impl;
+    sptr<Impl> pimpl_;
+    sptr<Impl> GetImpl();
+    std::mutex implMutex_;
 };
 }  // namespace NFC
 }  // namespace OHOS

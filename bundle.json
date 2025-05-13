@@ -1,7 +1,7 @@
 {
     "name": "@ohos/connected_nfc_tag",
     "version": "3.1",
-    "description": "nfc service",
+    "description": "nfc_tag service",
     "homePage": "https://gitee.com/openharmony",
     "license": "Apache License 2.0",
     "repository": "https://gitee.com/openharmony/communication_connected_nfc_tag",
@@ -41,7 +41,7 @@
         "syscap": [
             "SystemCapability.Communication.ConnectedTag"
         ],
-        "features": [],
+        "features": ["connected_nfc_tag_only_system_app_access_api"],
         "adapted_system_type": [
             "standard"
         ],
@@ -64,25 +64,32 @@
             ]
         },
         "build": {
-            "sub_component": [
-                "//foundation/communication/connected_nfc_tag/sa_profile:nfc_tag_profile",
-                "//foundation/communication/connected_nfc_tag/interfaces/inner_api:nfc_tag_inner_kits",
-                "//foundation/communication/connected_nfc_tag/services:nfc_tag_service",
-                "//foundation/communication/connected_nfc_tag/frameworks/js/napi:nfc_tag_napi"
-            ],
+            "group_type": {
+                "base_group": [],
+                "fwk_group": [
+                    "//foundation/communication/connected_nfc_tag/interfaces/inner_api:nfc_tag_inner_kits",
+                    "//foundation/communication/connected_nfc_tag/frameworks/js/napi:connectedtag"
+                ],
+                "service_group": [
+                    "//foundation/communication/connected_nfc_tag/sa_profile:nfc_tag_profile",
+                    "//foundation/communication/connected_nfc_tag/services:nfc_tag_service",
+                    "//foundation/communication/connected_nfc_tag/services:nfc_tag_service_static"
+                ]
+            },
             "inner_kits": [
                 {
                     "type": "so",
                     "name": "//foundation/communication/connected_nfc_tag/interfaces/inner_api:nfc_tag_inner_kits",
                     "header": {
                         "header_files": [
-                            "nfc_tag_impl.h"
+                            "nfc_tag_client.h"
                         ],
                         "header_base": "//foundation/communication/connected_nfc_tag/interfaces/inner_api/include"
                     }
                 }
             ],
             "test": [
+                "//foundation/communication/connected_nfc_tag/test:test_connected_nfc_tag"
             ]
         },
         "hisysevent_config": [

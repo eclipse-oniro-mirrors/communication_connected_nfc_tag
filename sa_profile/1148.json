@@ -1,0 +1,12 @@
+{
+    "process": "nfc_tag_service",
+    "systemability": [
+        {
+            "name": 1148,
+            "libpath": "libnfc_tag_service.z.so",
+            "run-on-create": true,
+            "distributed": false,
+            "dump_level": 1
+        }
+    ]
+}
