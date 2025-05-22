@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,12 +21,16 @@ namespace OHOS {
 namespace NFC {
 napi_value Init(napi_env env, napi_callback_info info);
 napi_value Uninit(napi_env env, napi_callback_info info);
+napi_value Initialize(napi_env env, napi_callback_info info);
+napi_value UnInitialize(napi_env env, napi_callback_info info);
 napi_value ReadNdefTag(napi_env env, napi_callback_info info);
 napi_value WriteNdefTag(napi_env env, napi_callback_info info);
+napi_value ReadNdefData(napi_env env, napi_callback_info info);
+napi_value WriteNdefData(napi_env env, napi_callback_info info);
 
 class ReadAsyncContext : public AsyncContext {
 public:
-    std::string respNdefData;
+    std::string respNdefData_;
     explicit ReadAsyncContext(napi_env env, napi_async_work work = nullptr, napi_deferred deferred = nullptr)
         : AsyncContext(env, work, deferred) {}
 
@@ -37,17 +41,42 @@ public:
 
 class WriteAsyncContext : public AsyncContext {
 public:
-    std::string writtenNdefData;
+    std::string writtenNdefData_;
     explicit WriteAsyncContext(napi_env env, napi_async_work work = nullptr, napi_deferred deferred = nullptr)
         : AsyncContext(env, work, deferred)
     {
-        writtenNdefData = "";
+        writtenNdefData_ = "";
     }
 
     WriteAsyncContext() = delete;
 
     ~WriteAsyncContext() override {}
 };
+
+class ReadDataAsyncContext : public AsyncContext {
+public:
+    std::vector<uint8_t> respNdefData_;
+    explicit ReadDataAsyncContext(napi_env env, napi_async_work work = nullptr, napi_deferred deferred = nullptr)
+        : AsyncContext(env, work, deferred) {}
+
+    ReadDataAsyncContext() = delete;
+
+    ~ReadDataAsyncContext() override {}
+};
+
+class WriteDataAsyncContext : public AsyncContext {
+public:
+    std::vector<uint8_t> writtenNdefData_;
+    explicit WriteDataAsyncContext(napi_env env, napi_async_work work = nullptr, napi_deferred deferred = nullptr)
+        : AsyncContext(env, work, deferred)
+    {
+    }
+
+    WriteDataAsyncContext() = delete;
+
+    ~WriteDataAsyncContext() override {}
+};
+
 }  // namespace NFC
 }  // namespace OHOS
 

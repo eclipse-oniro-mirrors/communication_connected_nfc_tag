@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,22 +19,22 @@
 #include <map>
 #include <vector>
 #include <shared_mutex>
-#include "define.h"
+#include "nfc_tag_errcode.h"
 #include "napi/native_api.h"
 
 namespace OHOS {
 namespace NFC {
 class AsyncEventData {
 public:
-    napi_env env;
-    napi_ref callbackRef;
-    napi_value jsEvent;
+    napi_env env_;
+    napi_ref callbackRef_;
+    napi_value jsEvent_;
 
     explicit AsyncEventData(napi_env e, napi_ref r, napi_value v)
     {
-        env = e;
-        callbackRef = r;
-        jsEvent = v;
+        env_ = e;
+        callbackRef_ = r;
+        jsEvent_ = v;
     }
 
     AsyncEventData() = delete;
@@ -45,19 +45,19 @@ public:
 
 class RegObj {
 public:
-    RegObj() : m_regEnv(0), m_regHanderRef(nullptr) {
+    RegObj() : regEnv_(0), regHanderRef_(nullptr) {
     }
     explicit RegObj(const napi_env& env, const napi_ref& ref)
     {
-        m_regEnv = env;
-        m_regHanderRef = ref;
+        regEnv_ = env;
+        regHanderRef_ = ref;
     }
 
     ~RegObj() {
     }
 
-    napi_env m_regEnv;
-    napi_ref m_regHanderRef;
+    napi_env regEnv_;
+    napi_ref regHanderRef_;
 };
 
 class EventRegister {

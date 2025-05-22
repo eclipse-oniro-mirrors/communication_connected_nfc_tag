@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,12 +16,16 @@
 #define NFC_INFC_TAG_CALLBACK_H
 
 #include <iremote_stub.h>
+#include "nfc_tag_errcode.h"
 
 namespace OHOS {
 namespace NFC {
 class INfcTagCallback : public IRemoteBroker {
 public:
-    virtual void OnNotify(int nfcRfState) = 0;
+    virtual ErrCode OnNotify(int nfcRfState) = 0;
+    enum {
+        CMD_ON_NFC_TAG_NOTIFY = 0,
+    };
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.nfc.INfcTagCallback");
 };
