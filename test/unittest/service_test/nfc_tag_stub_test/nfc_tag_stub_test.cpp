@@ -34,8 +34,7 @@ void TearDown() override {}
 
 ErrCode g_serviceRetMock = NFC_ERR_MAX;
 
-class NfcTagStubMock: public NfcTagStub
-{
+class NfcTagStubMock : public NfcTagStub {
 public:
     NfcTagStubMock() {}
     ~NfcTagStubMock() {}

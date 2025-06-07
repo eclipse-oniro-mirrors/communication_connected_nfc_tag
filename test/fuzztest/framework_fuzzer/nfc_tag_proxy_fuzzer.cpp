@@ -28,7 +28,7 @@
 namespace OHOS {
 namespace NFC {
 
-class NfcTagCallbackStubTest: public NfcTagCallbackStub {
+class NfcTagCallbackStubTest : public NfcTagCallbackStub {
 public:
     ErrCode OnNotify(int nfcRfState) override
     {

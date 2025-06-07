@@ -16,6 +16,12 @@
 #ifndef NFC_TAG_COMMON_MOCK_H
 #define NFC_TAG_COMMON_MOCK_H
 
-void InitCommonMock();
+namespace OHOS {
+namespace NFC {
+
+void InitCommonMock(void);
+
+} // namespace NFC
+} // namespace OHOS
 
 #endif // NFC_TAG_COMMON_MOCK_H
