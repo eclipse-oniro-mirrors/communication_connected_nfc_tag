@@ -27,12 +27,10 @@ public:
     virtual sptr<IRemoteObject> AsObject() = 0;
 };
 
-template <typename T> class BrokerDelegator
-{
+template <typename T> class BrokerDelegator {
 };
 
-class IRemoteBrokerMock
-{
+class IRemoteBrokerMock {
 public:
     static sptr<IRemoteBroker> g_brokerMock;
 };

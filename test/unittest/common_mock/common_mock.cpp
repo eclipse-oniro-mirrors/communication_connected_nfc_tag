@@ -57,7 +57,9 @@ int IPCObjectStub::sendRequestRetMock_ = -1;
 sptr<IRemoteBroker> IRemoteBrokerMock::g_brokerMock = nullptr;
 bool IRemoteProxyTest::remoteNull = false;
 
-void InitCommonMock()
+namespace OHOS {
+namespace NFC {
+void InitCommonMock(void)
 {
     AccessTokenKit::tokenType_ = ATokenTypeEnum::TOKEN_INVALID;
     AccessTokenKit::hapTokenInfo_ = {};
@@ -90,3 +92,6 @@ void InitCommonMock()
     IRemoteBrokerMock::g_brokerMock = nullptr;
     IRemoteProxyTest::remoteNull = false;
 }
+
+} // namespace NFC
+} // namespace OHOS

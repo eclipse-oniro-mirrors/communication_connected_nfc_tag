@@ -40,7 +40,7 @@ public:
         return iconnectedNfcTag_;
     }
 
-    virtual int32_t RegisterCallBack(const sptr<OHOS::HDI::ConnectedNfcTag::V1_1::IConnectedNfcTagCallback>& callbackObj)
+    virtual int32_t RegisterCallBack(const sptr<IConnectedNfcTagCallback>& callbackObj)
     {
         return resultMock_;
     }
