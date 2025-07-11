@@ -14,9 +14,7 @@
  */
 
 #include "gtest/gtest.h"
-#define private public
 #include "nfc_tag_callback_proxy.h"
-#undef private
 #include "nfc_tag_callback_stub.h"
 #include "nfc_tag_hdi_adapter.h"
 #include "accesstoken_kit.h"

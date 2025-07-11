@@ -19,3 +19,29 @@ declare_args() {
     connected_nfc_tag_only_system_app_access_api = true
   }
 }
+
+common_cflags = [
+  "-fstack-protector-strong",
+  "-D_FORTIFY_SOURCE=2",
+  "-fdata-sections",
+  "-ffunction-sections",
+  "-Os",
+  "-O2",
+]
+
+global_defines = ["NFC_TAG_HILOG"]
+
+global_sanitize = {
+  boundary_sanitize = true
+  cfi = true
+  cfi_cross_dso = true
+  integer_overflow = true
+  ubsan = true
+  debug = false
+}
+
+unittest_defines = [
+  "NFC_TAG_HILOG",
+  "private = public",
+  "protected = public",
+]

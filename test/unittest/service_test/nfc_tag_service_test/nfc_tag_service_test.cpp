@@ -15,10 +15,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#define private public
 #include "nfc_tag_service.h"
 #include "nfc_tag_utils.h"
-#undef private
 #include "nfc_tag_hdi_adapter.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
@@ -60,23 +58,6 @@ void SetUp() override
 void TearDown() override {}
 };
 
-class NfcTagHdiAdapter::Impl : public OHOS::RefBase {
-};
-
-NfcTagHdiAdapter::NfcTagHdiAdapter()
-{
-}
-
-NfcTagHdiAdapter::~NfcTagHdiAdapter()
-{
-}
-
-NfcTagHdiAdapter &NfcTagHdiAdapter::GetInstance()
-{
-    static NfcTagHdiAdapter sNfcTagHdiAdapter;
-    return sNfcTagHdiAdapter;
-}
-
 ErrCode NfcTagHdiAdapter::Init()
 {
     return g_hdiCodeMock;
@@ -113,6 +94,11 @@ ErrCode NfcTagHdiAdapter::RegisterCallBack(sptr<INfcTagCallback> listener)
 }
 
 ErrCode NfcTagHdiAdapter::UnRegisterCallBack(sptr<INfcTagCallback> listener)
+{
+    return g_hdiCodeMock;
+}
+
+ErrCode NfcTagHdiAdapter::InitDriver()
 {
     return g_hdiCodeMock;
 }

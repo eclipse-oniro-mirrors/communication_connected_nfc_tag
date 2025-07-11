@@ -112,6 +112,8 @@ void NfcTagService::OnStart()
         HILOGI("Service has already started.");
         return;
     }
+    ErrCode errCode = hdiAdapter_.InitDriver();
+    HILOGI("hdiAdapter_.InitDriver: %{public}d", errCode);
     if (!ServiceInit()) {
         HILOGE("Failed to init service");
         OnStop();
@@ -166,7 +168,7 @@ ErrCode NfcTagService::Init()
     if (ret != NFC_SUCCESS) {
         return ret;
     }
-    return NfcTagHdiAdapter::GetInstance().Init();
+    return hdiAdapter_.Init();
 }
 
 ErrCode NfcTagService::Uninit()
@@ -175,7 +177,7 @@ ErrCode NfcTagService::Uninit()
     if (ret != NFC_SUCCESS) {
         return ret;
     }
-    return NfcTagHdiAdapter::GetInstance().Uninit();
+    return hdiAdapter_.Uninit();
 }
 
 ErrCode NfcTagService::ReadNdefTag(std::string &response)
@@ -184,7 +186,7 @@ ErrCode NfcTagService::ReadNdefTag(std::string &response)
     if (ret != NFC_SUCCESS) {
         return ret;
     }
-    return NfcTagHdiAdapter::GetInstance().ReadNdefTag(response);
+    return hdiAdapter_.ReadNdefTag(response);
 }
 
 ErrCode NfcTagService::WriteNdefTag(const std::string &data)
@@ -193,7 +195,7 @@ ErrCode NfcTagService::WriteNdefTag(const std::string &data)
     if (ret != NFC_SUCCESS) {
         return ret;
     }
-    return NfcTagHdiAdapter::GetInstance().WriteNdefTag(data);
+    return hdiAdapter_.WriteNdefTag(data);
 }
 
 ErrCode NfcTagService::ReadNdefData(std::vector<uint8_t> &data)
@@ -202,7 +204,7 @@ ErrCode NfcTagService::ReadNdefData(std::vector<uint8_t> &data)
     if (ret != NFC_SUCCESS) {
         return ret;
     }
-    return NfcTagHdiAdapter::GetInstance().ReadNdefData(data);
+    return hdiAdapter_.ReadNdefData(data);
 }
 
 ErrCode NfcTagService::WriteNdefData(const std::vector<uint8_t> &data)
@@ -211,7 +213,7 @@ ErrCode NfcTagService::WriteNdefData(const std::vector<uint8_t> &data)
     if (ret != NFC_SUCCESS) {
         return ret;
     }
-    return NfcTagHdiAdapter::GetInstance().WriteNdefData(data);
+    return hdiAdapter_.WriteNdefData(data);
 }
 
 ErrCode NfcTagService::RegListener(const sptr<INfcTagCallback> &callback)
@@ -230,7 +232,7 @@ ErrCode NfcTagService::RegListener(const sptr<INfcTagCallback> &callback)
     }
     ErrCode errCode = callbackManager_->RegisterListener(callback);
     if (errCode == NFC_SUCCESS) {
-        ErrCode hdiCode = NfcTagHdiAdapter::GetInstance().RegisterCallBack(callbackManager_);
+        ErrCode hdiCode = hdiAdapter_.RegisterCallBack(callbackManager_);
         if (hdiCode != NFC_SUCCESS) {
             callbackManager_->UnRegisterListener(callback);
         }
@@ -255,7 +257,7 @@ ErrCode NfcTagService::UnregListener(const sptr<INfcTagCallback> &callback)
     }
     ErrCode errCode = callbackManager_->UnRegisterListener(callback);
     if (errCode == NFC_SUCCESS) {
-        return NfcTagHdiAdapter::GetInstance().UnRegisterCallBack(callbackManager_);
+        return hdiAdapter_.UnRegisterCallBack(callbackManager_);
     }
     return errCode;
 }

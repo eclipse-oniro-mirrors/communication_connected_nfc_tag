@@ -19,19 +19,19 @@ import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 ohos_fuzztest("ServiceFuzzTest") {
   module_out_path = "connected_nfc_tag/nfc_tag_service/"
   fuzz_config_file = "$NFC_TAG_DIR/test/fuzztest/service_fuzzer"
-
-  defines = [ "NFC_TAG_HILOG" ]
+  defines = global_defines
   sources = [
     "nfc_tag_service_fuzzer.cpp",
   ]
   include_dirs = [
     "$NFC_TAG_DIR/interfaces/inner_api/include",
+    "$NFC_TAG_DIR/services/src/hdi/include",
     "$NFC_TAG_DIR/services/include",
     "$NFC_TAG_DIR/test/utils",
   ]
   deps = [
-    "$NFC_TAG_DIR/interfaces/inner_api:nfc_tag_inner_kits",
-    "$NFC_TAG_DIR/services:nfc_tag_service_static",
+    "$NFC_TAG_DIR/interfaces/inner_api:nfc_tag_inner_kits_test",
+    "$NFC_TAG_DIR/services:nfc_tag_service_test",
     "$NFC_TAG_DIR/test/utils:test_utils_static",
   ]
 
@@ -41,24 +41,6 @@ ohos_fuzztest("ServiceFuzzTest") {
     "ipc:ipc_core",
   ]
 
-  cflags_cc = [ "--coverage" ]
-  cflags = [ "--coverage" ]
-  ldflags = [ "--coverage" ]
-  cflags += [
-    "-g",
-    "-O0",
-    "-Wno-unused-variable",
-    "-fno-omit-frame-pointer",
-  ]
-  sanitize = {
-    cfi = true
-    boundary_sanitize = true
-    integer_overflow = true
-    cfi_cross_dso = true
-    debug = true
-    ubsan = true
-    cfi_vcall_icall_only = true
-  }
   part_name = "connected_nfc_tag"
   subsystem_name = "communication"
 }

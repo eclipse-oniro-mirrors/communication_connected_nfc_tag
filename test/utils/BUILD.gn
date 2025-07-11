@@ -18,6 +18,10 @@ import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
 # Only used for test
 ohos_static_library("test_utils_static") {
+  defines = unittest_defines
+  cflags_cc = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
   sources = [
     "nfc_tag_access_token_mock.cpp",
   ]

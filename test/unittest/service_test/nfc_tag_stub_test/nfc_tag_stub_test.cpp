@@ -14,9 +14,7 @@
  */
 
 #include "gtest/gtest.h"
-#define private public
 #include "nfc_tag_stub.h"
-#undef private
 #include "nfc_tag_callback_stub.h"
 #include "iremote_broker.h"
 

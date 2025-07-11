@@ -13,38 +13,63 @@
 
 import("//build/ohos.gni")
 import("//drivers/hdf_core/adapter/uhdf2/uhdf.gni")
+import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
 ohos_static_library("nfc_tag_hdi_adapter") {
-  cflags_cc = [
-    "-fPIC",
-    "-fdata-sections",
-    "-fno-exceptions",
-    "-ffunction-sections",
-    "-Oz",
-    "-flto",
-    "-Wno-unused-parameter",
-    "-Wunused-private-field",
-  ]
-  sanitize = {
-    cfi = true
-    boundary_sanitize = true
-    integer_overflow = true
-    cfi_cross_dso = true
-    debug = false
-    ubsan = true
-    cfi_vcall_icall_only = true
-  }
+  cflags = common_cflags
+  cflags_cc = common_cflags
+  sanitize = global_sanitize
+  defines = global_defines
   branch_protector_ret = "pac_ret"
 
   include_dirs = [
     "include",
-    "//foundation/communication/connected_nfc_tag/interfaces/inner_api/include",
+    "$NFC_TAG_DIR/interfaces/inner_api/include",
+    "$NFC_TAG_DIR/utils/sa_listener",
     "//third_party/bounds_checking_function/include",
   ]
 
-  sources = [ "src/nfc_tag_hdi_adapter.cpp" ]
+  sources = [
+    "src/nfc_tag_hdi_adapter.cpp",
+    "src/nfc_tag_hdi_impl.cpp",
+  ]
 
-  deps = []
+  deps = [
+    "$NFC_TAG_DIR/utils/sa_listener:nfc_tag_sa_listener",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "drivers_interface_connected_nfc_tag:libconnected_nfc_tag_proxy_1.1",
+    "hdf_core:libhdi",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+  ]
+
+  subsystem_name = "communication"
+  part_name = "connected_nfc_tag"
+}
+
+ohos_static_library("nfc_tag_hdi_adapter_test") {
+  defines = global_defines
+  cflags_cc = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
+  include_dirs = [
+    "include",
+    "$NFC_TAG_DIR/interfaces/inner_api/include",
+    "$NFC_TAG_DIR/utils/sa_listener",
+    "//third_party/bounds_checking_function/include",
+  ]
+
+  sources = [
+    "src/nfc_tag_hdi_adapter.cpp",
+    "src/nfc_tag_hdi_impl.cpp",
+  ]
+
+  deps = [
+    "$NFC_TAG_DIR/utils/sa_listener:nfc_tag_sa_listener",
+  ]
 
   external_deps = [
     "c_utils:utils",

@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 Huawei Device Co., Ltd.
+# Copyright (C) 2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,39 +12,28 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-import("//build/ohos_var.gni")
 import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
-config("nfc_tag_config") {
-  include_dirs = [
-    "$NFC_TAG_DIR/interfaces/inner_api/include",
-  ]
-}
-
-config("nfc_tag_public_config") {
-  include_dirs = ["include"]
-}
-
-ohos_shared_library("nfc_tag_inner_kits") {
+ohos_static_library("nfc_tag_sa_listener") {
   cflags = common_cflags
   cflags_cc = common_cflags
   sanitize = global_sanitize
   defines = global_defines
   branch_protector_ret = "pac_ret"
-  configs = [ ":nfc_tag_config" ]
-  public_configs = [ ":nfc_tag_public_config" ]
-  sources = [
-    "src/nfc_tag_callback_stub.cpp",
-    "src/nfc_tag_client.cpp",
-    "src/nfc_tag_proxy.cpp",
+
+  include_dirs = [
+    "include",
+    "$NFC_TAG_DIR/interfaces/inner_api/include",
+    "//third_party/bounds_checking_function/include",
   ]
+
+  sources = [ "system_ability_listener.cpp" ]
 
   deps = []
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
 
@@ -52,25 +41,25 @@ ohos_shared_library("nfc_tag_inner_kits") {
   part_name = "connected_nfc_tag"
 }
 
-ohos_static_library("nfc_tag_inner_kits_test") {
-  defines = global_defines
+ohos_static_library("nfc_tag_sa_listener_test") {
+  defines = unittest_defines
   cflags_cc = [ "--coverage" ]
   cflags = [ "--coverage" ]
   ldflags = [ "--coverage" ]
-  configs = [ ":nfc_tag_config" ]
-  public_configs = [ ":nfc_tag_public_config" ]
-  sources = [
-    "src/nfc_tag_callback_stub.cpp",
-    "src/nfc_tag_client.cpp",
-    "src/nfc_tag_proxy.cpp",
+
+  include_dirs = [
+    "include",
+    "$NFC_TAG_DIR/interfaces/inner_api/include",
+    "//third_party/bounds_checking_function/include",
   ]
+
+  sources = [ "system_ability_listener.cpp" ]
 
   deps = []
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
 

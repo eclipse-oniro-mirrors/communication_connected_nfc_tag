@@ -15,17 +15,6 @@ import("//build/ohos.gni")
 import("//build/ohos_var.gni")
 import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
-nfc_tag_service_cflags_cc = [
-  "-fPIC",
-  "-fdata-sections",
-  "-fno-exceptions",
-  "-ffunction-sections",
-  "-Oz",
-  "-flto",
-  "-Wno-unused-parameter",
-  "-Wunused-private-field",
-]
-
 nfc_tag_service_source = [
     "src/nfc_tag_callback_proxy.cpp",
     "src/nfc_tag_service.cpp",
@@ -56,17 +45,10 @@ nfc_tag_service_external_deps = [
 ]
 
 ohos_shared_library("nfc_tag_service") {
-  cflags_cc = nfc_tag_service_cflags_cc
-  defines = [ "NFC_TAG_HILOG" ]
-  sanitize = {
-    cfi = true
-    boundary_sanitize = true
-    integer_overflow = true
-    cfi_cross_dso = true
-    debug = false
-    ubsan = true
-    cfi_vcall_icall_only = true
-  }
+  cflags = common_cflags
+  cflags_cc = common_cflags
+  sanitize = global_sanitize
+  defines = global_defines
   branch_protector_ret = "pac_ret"
 
   # Used to control the export of dynamic library symbols.
@@ -87,26 +69,15 @@ ohos_shared_library("nfc_tag_service") {
   subsystem_name = "communication"
 }
 
-ohos_static_library("nfc_tag_service_static") {
-  cflags_cc = nfc_tag_service_cflags_cc
-  defines = [ "NFC_TAG_HILOG" ]
-  sanitize = {
-    cfi = true
-    boundary_sanitize = true
-    integer_overflow = true
-    cfi_cross_dso = true
-    debug = false
-    ubsan = true
-    cfi_vcall_icall_only = true
-  }
-  branch_protector_ret = "pac_ret"
+ohos_static_library("nfc_tag_service_test") {
+  defines = global_defines
 
   include_dirs = nfc_tag_service_include_dirs
 
   sources = nfc_tag_service_source
 
   deps = [
-    "$NFC_TAG_DIR/services/src/hdi:nfc_tag_hdi_adapter",
+    "$NFC_TAG_DIR/services/src/hdi:nfc_tag_hdi_adapter_test",
   ]
 
   external_deps = nfc_tag_service_external_deps
