@@ -15,9 +15,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#define private public
 #include "nfc_tag_callback_stub.h"
-#undef private
 #include "common_mock.h"
 using namespace testing;
 using namespace testing::ext;

@@ -18,25 +18,16 @@ import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
 ohos_unittest("nfc_tag_callback_proxy_unittest") {
   module_out_path = "connected_nfc_tag/nfc_tag_service/"
-  defines = [ "NFC_TAG_HILOG" ]
+  defines = unittest_defines
+  cflags_cc = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
   sources = [
     "nfc_tag_callback_proxy_test.cpp",
     "$NFC_TAG_DIR/test/unittest/source_mock/nfc_tag_callback_stub_mock.cpp",
     "$NFC_TAG_DIR/services/src/nfc_tag_callback_proxy.cpp",
   ]
-  cflags_cc = [ "--coverage" ]
-  cflags = [ "--coverage" ]
-  ldflags = [ "--coverage" ]
 
-  sanitize = {
-    cfi = true
-    boundary_sanitize = true
-    integer_overflow = true
-    cfi_cross_dso = true
-    debug = false
-    ubsan = true
-    cfi_vcall_icall_only = true
-  }
   include_dirs = [
     "$NFC_TAG_DIR/services/include",
     "$NFC_TAG_DIR/services/src/hdi/include",

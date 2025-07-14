@@ -22,6 +22,7 @@
 #include "nfc_tag_stub.h"
 #include "iremote_object.h"
 #include "nfc_tag_errcode.h"
+#include "nfc_tag_hdi_adapter.h"
 
 namespace OHOS {
 namespace NFC {
@@ -76,6 +77,7 @@ private:
     bool ServiceInit();
     ErrCode VerifyPermissionsBeforeEntry();
 private:
+    NfcTagHdiAdapter hdiAdapter_;
     bool published_;
     ServiceRunningState state_;
     sptr<NfcTagCallBackManager> callbackManager_;

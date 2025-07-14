@@ -18,7 +18,6 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-#include <mutex>
 
 #include "infc_tag_callback.h"
 #include "nfc_tag_errcode.h"
@@ -27,10 +26,6 @@ namespace OHOS {
 namespace NFC {
 class NfcTagHdiAdapter {
 public:
-    NfcTagHdiAdapter();
-    ~NfcTagHdiAdapter();
-    static NfcTagHdiAdapter &GetInstance();
-
     ErrCode Init();
 
     ErrCode Uninit();
@@ -46,12 +41,8 @@ public:
     ErrCode RegisterCallBack(sptr<INfcTagCallback> listener);
 
     ErrCode UnRegisterCallBack(sptr<INfcTagCallback> listener);
-
-private:
-    class Impl;
-    sptr<Impl> pimpl_;
-    sptr<Impl> GetImpl();
-    std::mutex implMutex_;
+public:
+    ErrCode InitDriver();
 };
 }  // namespace NFC
 }  // namespace OHOS

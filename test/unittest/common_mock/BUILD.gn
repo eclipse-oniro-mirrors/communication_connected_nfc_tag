@@ -21,7 +21,10 @@ config("common_mock_config") {
 }
 
 ohos_static_library("nfc_tag_common_mock") {
-  defines = [ "NFC_TAG_HILOG" ]
+  defines = unittest_defines
+  cflags_cc = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
   sources = [
     "common_mock.cpp",
   ]

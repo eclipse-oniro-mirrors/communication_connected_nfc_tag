@@ -18,14 +18,14 @@ import("//foundation/communication/connected_nfc_tag/connected_nfc_tag.gni")
 
 ohos_unittest("nfc_tag_sys_perm_unittest") {
   module_out_path = "connected_nfc_tag/nfc_tag_service/"
-  defines = [ "NFC_TAG_HILOG" ]
+  defines = unittest_defines
+  cflags_cc = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
   sources = [
     "nfc_tag_sys_perm_test.cpp",
     "$NFC_TAG_DIR/services/src/nfc_tag_sys_perm.cpp",
   ]
-  cflags_cc = [ "--coverage" ]
-  cflags = [ "--coverage" ]
-  ldflags = [ "--coverage" ]
 
   include_dirs = [
     "$NFC_TAG_DIR/services/include",

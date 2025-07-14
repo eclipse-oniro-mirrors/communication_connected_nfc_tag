@@ -72,8 +72,7 @@
                 ],
                 "service_group": [
                     "//foundation/communication/connected_nfc_tag/sa_profile:nfc_tag_profile",
-                    "//foundation/communication/connected_nfc_tag/services:nfc_tag_service",
-                    "//foundation/communication/connected_nfc_tag/services:nfc_tag_service_static"
+                    "//foundation/communication/connected_nfc_tag/services:nfc_tag_service"
                 ]
             },
             "inner_kits": [
