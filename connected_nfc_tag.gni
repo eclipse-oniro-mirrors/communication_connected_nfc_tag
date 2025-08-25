@@ -21,7 +21,6 @@ declare_args() {
 }
 
 common_cflags = [
-  "-fstack-protector-strong",
   "-D_FORTIFY_SOURCE=2",
   "-fdata-sections",
   "-ffunction-sections",
