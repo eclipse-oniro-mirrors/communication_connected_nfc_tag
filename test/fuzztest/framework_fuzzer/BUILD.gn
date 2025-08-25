@@ -20,6 +20,9 @@ ohos_fuzztest("FrameworkFuzzTest") {
   module_out_path = "connected_nfc_tag/nfc_tag_service/"
   fuzz_config_file = "$NFC_TAG_DIR/test/fuzztest/framework_fuzzer"
   defines = global_defines
+  cflags_cc = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
   sources = [
     "nfc_tag_proxy_fuzzer.cpp",
   ]
