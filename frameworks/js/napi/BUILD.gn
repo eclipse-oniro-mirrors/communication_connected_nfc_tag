@@ -21,6 +21,7 @@ ohos_shared_library("connectedtag") {
     "$NFC_TAG_DIR/interfaces/inner_api/include",
   ]
   defines = [ "NFC_TAG_HILOG" ]
+  branch_protector_ret = "pac_ret"
 
   sources = [
     "nfc_napi_adapter.cpp",
