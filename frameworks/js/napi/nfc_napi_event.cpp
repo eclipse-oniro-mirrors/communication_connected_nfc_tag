@@ -15,7 +15,6 @@
 
 #define LOG_TAG "NFCTAG_FWK_NAPI"
 #include "nfc_napi_event.h"
-#include <uv.h>
 #include "nfc_tag_log.h"
 #include "nfc_napi_utils.h"
 #include "infc_tag_callback.h"
@@ -32,39 +31,13 @@ const std::set<std::string> SUPPORT_EVENT_LIST = {
 constexpr int NOTIFY_TYPE_LEN = 64;
 constexpr int NFC_ENTER = 0;
 constexpr int NFC_LEAVE = 1;
+constexpr int32_t NFC_JS_LEAVE = 0;
+constexpr int32_t NFC_JS_ENTER = 1;
 constexpr size_t ARGC_ONE = 1;
 constexpr size_t ARGC_TWO = 2;
 std::shared_mutex g_regInfoMutex;
 std::map<std::string, std::vector<RegObj>> g_eventRegisterInfo;
 }
-
-class NapiEvent {
-public:
-    bool CheckIsRegister(const std::string& type);
-    void EventNotify(AsyncEventData *asyncEvent);
-
-    template<typename T>
-    void CheckAndNotify(const std::string& type, const T& obj)
-    {
-        std::shared_lock<std::shared_mutex> guard(NFC::g_regInfoMutex);
-        if (!CheckIsRegister(type)) {
-            return;
-        }
-
-        std::vector<RegObj>& vecObj = NFC::g_eventRegisterInfo[type];
-        for (auto& each : vecObj) {
-            napi_value result;
-            napi_create_int32(each.regEnv_, obj, &result);
-            AsyncEventData *asyncEvent = new AsyncEventData(each.regEnv_, each.regHanderRef_, result);
-            if (asyncEvent == nullptr) {
-                return;
-            }
-            EventNotify(asyncEvent);
-        }
-    }
-};
-
-bool EventRegister::isEventRegistered = false;
 
 void NapiEvent::EventNotify(AsyncEventData *asyncEvent)
 {
@@ -73,50 +46,33 @@ void NapiEvent::EventNotify(AsyncEventData *asyncEvent)
         HILOGE("asyncEvent is null.");
         return;
     }
-    uv_loop_s* loop = nullptr;
-    napi_get_uv_event_loop(asyncEvent->env_, &loop);
 
-    uv_work_t* work = new uv_work_t;
-    if (work == nullptr) {
-        HILOGE("uv_work_t work is null.");
+    auto task = [asyncEvent]() {
+        napi_handle_scope scope = nullptr;
+        napi_open_handle_scope(asyncEvent->env_, &scope);
+        if (scope == nullptr) {
+            HILOGE("scope is nullptr");
+            napi_close_handle_scope(asyncEvent->env_, scope);
+            return;
+        }
+        napi_value undefine;
+        napi_get_undefined(asyncEvent->env_, &undefine);
+        napi_value result;
+        napi_create_int32(asyncEvent->env_, asyncEvent->jsEvent_, &result);
+        napi_value handler = nullptr;
+        napi_get_reference_value(asyncEvent->env_, asyncEvent->callbackRef_, &handler);
+        if (napi_call_function(asyncEvent->env_, nullptr, handler, 1, &result, &undefine) != napi_ok) {
+            HILOGE("Report event to Js failed");
+        }
+        napi_close_handle_scope(asyncEvent->env_, scope);
         delete asyncEvent;
-        asyncEvent = nullptr;
-        return;
+    };
+
+    napi_status sendRet = napi_send_event(asyncEvent->env_, task, napi_eprio_high);
+    if (sendRet != napi_ok) {
+        HILOGE("napi_send_event failed, ret:%{public}d", sendRet);
+        delete asyncEvent;
     }
-
-    work->data = asyncEvent;
-    uv_queue_work(
-        loop, work, [](uv_work_t* work) {},
-        [](uv_work_t* work, int status) {
-            AsyncEventData *asyncData = static_cast<AsyncEventData*>(work->data);
-            if (asyncData == nullptr) {
-                HILOGE("asyncData is null.");
-                return;
-            }
-            HILOGI("Napi event uv_queue_work, status: %{public}d", status);
-            napi_handle_scope scope = nullptr;
-            napi_open_handle_scope(asyncData->env_, &scope);
-            if (scope == nullptr) {
-                HILOGE("scope is nullptr");
-                napi_close_handle_scope(asyncData->env_, scope);
-                return;
-            }
-            napi_value undefine;
-            napi_get_undefined(asyncData->env_, &undefine);
-            napi_value handler = nullptr;
-            napi_get_reference_value(asyncData->env_, asyncData->callbackRef_, &handler);
-
-            if (napi_call_function(asyncData->env_, nullptr, handler, 1, &asyncData->jsEvent_, &undefine) != napi_ok) {
-                HILOGE("Report event to Js failed");
-            }
-            napi_close_handle_scope(asyncData->env_, scope);
-            if (asyncData != nullptr) {
-                delete asyncData;
-                asyncData = nullptr;
-            }
-            delete work;
-            work = nullptr;
-        });
 }
 
 bool NapiEvent::CheckIsRegister(const std::string& type)
@@ -124,30 +80,33 @@ bool NapiEvent::CheckIsRegister(const std::string& type)
     return NFC::g_eventRegisterInfo.find(type) != NFC::g_eventRegisterInfo.end();
 }
 
-class NfcListenerEvent : public INfcTagCallback, public NapiEvent {
-public:
-    NfcListenerEvent() {}
+void NapiEvent::CheckAndNotify(const std::string& type, int32_t value)
+{
+    std::shared_lock<std::shared_mutex> guard(NFC::g_regInfoMutex);
+    if (!CheckIsRegister(type)) {
+        return;
+    }
 
-    virtual ~NfcListenerEvent() {}
-
-public:
-    ErrCode OnNotify(int nfcRfState) override
-    {
-        HILOGI("OnNotify rcvd nfcRfState: %{public}d", nfcRfState);
-        if (nfcRfState == NFC_ENTER || nfcRfState == NFC_LEAVE) {
-            CheckAndNotify(EVENT_NOTIFY, nfcRfState);
+    std::vector<RegObj>& vecObj = NFC::g_eventRegisterInfo[type];
+    for (auto& each : vecObj) {
+        AsyncEventData *asyncEvent = new AsyncEventData(each.regEnv_, each.regHanderRef_, value);
+        if (asyncEvent == nullptr) {
+            return;
         }
-        return NFC_SUCCESS;
+        EventNotify(asyncEvent);
     }
+}
 
-    OHOS::sptr<OHOS::IRemoteObject> AsObject() override
-    {
-        return nullptr;
+ErrCode NfcListenerEvent::OnNotify(int nfcRfState)
+{
+    HILOGI("OnNotify rcvd nfcRfState: %{public}d", nfcRfState);
+    if (nfcRfState == NFC_ENTER) {
+        CheckAndNotify(EVENT_NOTIFY, NFC_JS_ENTER);
+    } else if (nfcRfState == NFC_LEAVE) {
+        CheckAndNotify(EVENT_NOTIFY, NFC_JS_LEAVE);
     }
-};
-
-sptr<NfcListenerEvent> nfcListenerEvent =
-    sptr<NfcListenerEvent>(new (std::nothrow) NfcListenerEvent());
+    return NFC_SUCCESS;
+}
 
 napi_value On(napi_env env, napi_callback_info cbinfo)
 {
@@ -217,12 +176,31 @@ napi_value Off(napi_env env, napi_callback_info cbinfo)
 
 ErrCode EventRegister::RegisterNfcEvents()
 {
-    ErrCode ret = DelayedRefSingleton<NfcTagClient>::GetInstance().RegListener(nfcListenerEvent);
+    if (nfcListenerEvent_) {
+        return NFC_SUCCESS;
+    }
+    nfcListenerEvent_ = sptr<NfcListenerEvent>::MakeSptr();
+    ErrCode ret = DelayedRefSingleton<NfcTagClient>::GetInstance().RegListener(nfcListenerEvent_);
     if (ret != NFC_SUCCESS) {
-        HILOGE("RegisterNfcEvents nfcListenerEvent failed!");
+        HILOGE("RegListener failed!");
+        nfcListenerEvent_ = nullptr;
         return ret;
     }
-    return ret;
+    return NFC_SUCCESS;
+}
+
+ErrCode EventRegister::UnRegisterNfcEvents()
+{
+    if (nfcListenerEvent_ == nullptr) {
+        return NFC_SUCCESS;
+    }
+    ErrCode ret = DelayedRefSingleton<NfcTagClient>::GetInstance().UnregListener(nfcListenerEvent_);
+    if (ret != NFC_SUCCESS) {
+        HILOGE("UnregListener failed!");
+        return ret;
+    }
+    nfcListenerEvent_ = nullptr;
+    return NFC_SUCCESS;
 }
 
 EventRegister& EventRegister::GetInstance()
@@ -245,12 +223,7 @@ void EventRegister::Register(const napi_env& env, const std::string& type, napi_
         return;
     }
     std::unique_lock<std::shared_mutex> guard(NFC::g_regInfoMutex);
-    if (!isEventRegistered) {
-        if (RegisterNfcEvents() != NFC_SUCCESS) {
-            return;
-        }
-        isEventRegistered = true;
-    }
+    RegisterNfcEvents();
     napi_ref handlerRef = nullptr;
     napi_create_reference(env, handler, 1, &handlerRef);
     RegObj regObj(env, handlerRef);
@@ -308,6 +281,7 @@ void EventRegister::Unregister(const napi_env& env, const std::string& type, nap
     } else {
         HILOGW("All callback is unsubscribe for event: %{public}s", type.c_str());
         DeleteAllRegisterObj(iter->second);
+        UnRegisterNfcEvents();
     }
     if (iter->second.empty()) {
         NFC::g_eventRegisterInfo.erase(iter);

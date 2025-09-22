@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace NFC {
 
-static int NFC_TAG_MAX_LEN = 512;
+static int32_t NFC_TAG_MAX_LEN = 512;
 
 NfcTagStub::NfcTagStub()
 {
@@ -100,13 +100,13 @@ ErrCode NfcTagStub::OnWriteNdefTag(uint32_t code, MessageParcel &data, MessagePa
         HILOGE("ipc ReadString failed");
         return NFC_IPC_READ_FAILED;
     }
-    size_t dataLen = dataToWrite.length();
-    HILOGI("datasize %{public}zu, dataLen = %{public}lu", data.GetRawDataSize(), dataLen);
-    if (dataLen > NFC_TAG_MAX_LEN || dataLen == 0) {
+    int32_t dataLen = static_cast<int32_t>(dataToWrite.length());
+    HILOGI("datasize %{public}zu, dataLen = %{public}d", data.GetRawDataSize(), dataLen);
+    if (dataLen > NFC_TAG_MAX_LEN || dataLen <= 0) {
         return NFC_INVALID_PARAMETER;
     }
     ErrCode ret = WriteNdefTag(dataToWrite);
-    reply.WriteInt32(static_cast<int32_t>(dataLen));
+    reply.WriteInt32(dataLen);
     return ret;
 }
 
@@ -128,10 +128,10 @@ ErrCode NfcTagStub::OnWriteNdefData(uint32_t code, MessageParcel &data, MessageP
         reply.WriteInt32(NFC_IPC_READ_FAILED);
         return NFC_IPC_READ_FAILED;
     }
-    int size = static_cast<int>(dataToWrite.size());
+    int32_t size = static_cast<int32_t>(dataToWrite.size());
     HILOGI("datasize %{public}zu, size = %{public}d",
         data.GetRawDataSize(), size);
-    if (size > NFC_TAG_MAX_LEN || size == 0) {
+    if (size > NFC_TAG_MAX_LEN || size <= 0) {
         return NFC_INVALID_PARAMETER;
     }
     ErrCode ret = WriteNdefData(dataToWrite);
