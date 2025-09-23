@@ -20,6 +20,7 @@
 #include <vector>
 #include <shared_mutex>
 #include "nfc_tag_errcode.h"
+#include "infc_tag_callback.h"
 #include "napi/native_api.h"
 
 namespace OHOS {
@@ -28,9 +29,9 @@ class AsyncEventData {
 public:
     napi_env env_;
     napi_ref callbackRef_;
-    napi_value jsEvent_;
+    int32_t jsEvent_;
 
-    explicit AsyncEventData(napi_env e, napi_ref r, napi_value v)
+    explicit AsyncEventData(napi_env e, napi_ref r, int32_t v)
     {
         env_ = e;
         callbackRef_ = r;
@@ -60,6 +61,28 @@ public:
     napi_ref regHanderRef_;
 };
 
+class NapiEvent {
+public:
+    bool CheckIsRegister(const std::string& type);
+    void EventNotify(AsyncEventData *asyncEvent);
+    void CheckAndNotify(const std::string& type, int32_t value);
+};
+
+class NfcListenerEvent : public INfcTagCallback, public NapiEvent {
+public:
+    NfcListenerEvent() {}
+
+    virtual ~NfcListenerEvent() {}
+
+public:
+    ErrCode OnNotify(int nfcRfState) override;
+
+    OHOS::sptr<OHOS::IRemoteObject> AsObject() override
+    {
+        return nullptr;
+    }
+};
+
 class EventRegister {
 public:
     EventRegister() {
@@ -74,11 +97,12 @@ public:
 
 private:
     ErrCode RegisterNfcEvents();
+    ErrCode UnRegisterNfcEvents();
     bool IsEventSupport(const std::string& type);
     void DeleteRegisterObj(std::vector<RegObj>& vecRegObjs, napi_value& handler);
     void DeleteAllRegisterObj(std::vector<RegObj>& vecRegObjs);
 
-    static bool isEventRegistered;
+    sptr<NfcListenerEvent> nfcListenerEvent_ = nullptr;
 };
 
 napi_value On(napi_env env, napi_callback_info cbinfo);

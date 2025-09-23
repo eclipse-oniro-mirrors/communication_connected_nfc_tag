@@ -44,6 +44,7 @@ public:
         executeFunc_ = nullptr;
         completeFunc_ = nullptr;
         result_ = nullptr;
+        resourceName_ = nullptr;
         errorCode_ = NFC_ERR_MAX;
     }
 

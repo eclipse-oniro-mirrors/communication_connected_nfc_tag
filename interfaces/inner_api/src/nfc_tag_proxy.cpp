@@ -21,7 +21,7 @@
 
 namespace OHOS {
 namespace NFC {
-static int NFC_TAG_MAX_LEN = 512;
+static int32_t NFC_TAG_MAX_LEN = 512;
 NfcTagProxy::NfcTagProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<INfcTagService>(impl), remoteDied_(false)
 {
@@ -174,7 +174,8 @@ ErrCode NfcTagProxy::WriteNdefData(const std::vector<uint8_t> &data)
         HILOGE("remote service is died!");
         return NFC_REMOTE_DIED;
     }
-    if (data.size() == 0 || data.size() > NFC_TAG_MAX_LEN) {
+    int32_t dataLen = static_cast<int32_t>(data.size());
+    if (dataLen <= 0 || dataLen > NFC_TAG_MAX_LEN) {
         HILOGE("invalid size");
         return NFC_INVALID_PARAMETER;
     }

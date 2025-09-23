@@ -117,15 +117,15 @@ napi_value WriteNdefTag(napi_env env, napi_callback_info info)
         }
     }
 
-    WriteAsyncContext *asyncContext = new WriteAsyncContext(env);
-    napi_create_string_latin1(env, "writeNdefTag", NAPI_AUTO_LENGTH, &asyncContext->resourceName_);
-
     std::string inputWrittenNdefData = "";
     if (!ParseString(env, inputWrittenNdefData, argv[0])) {
         CheckNfcStatusCodeAndThrow(env, NFC_INVALID_PARAMETER);
         return CreateUndefined(env);
     }
     HILOGI("WriteNdefTag argc = %{public}zu, len = %{public}zu", argc, inputWrittenNdefData.length());
+
+    WriteAsyncContext *asyncContext = new WriteAsyncContext(env);
+    napi_create_string_latin1(env, "writeNdefTag", NAPI_AUTO_LENGTH, &asyncContext->resourceName_);
     asyncContext->writtenNdefData_ = inputWrittenNdefData;
 
     asyncContext->executeFunc_ = [&](void* data) -> void {
@@ -206,9 +206,6 @@ napi_value WriteNdefData(napi_env env, napi_callback_info info)
         }
     }
 
-    WriteDataAsyncContext *asyncContext = new WriteDataAsyncContext(env);
-    napi_create_string_latin1(env, "WriteNdefData", NAPI_AUTO_LENGTH, &asyncContext->resourceName_);
-
     std::vector<uint8_t> inputWrittenNdefData;
     if (ParseByteArray(env, argv[0], inputWrittenNdefData) != napi_ok) {
         HILOGE("WriteNdefData ParseByteArray failed");
@@ -216,6 +213,9 @@ napi_value WriteNdefData(napi_env env, napi_callback_info info)
         return CreateUndefined(env);
     }
     HILOGI("WriteNdefData argc = %{public}zu, size = %{public}zu", argc, inputWrittenNdefData.size());
+
+    WriteDataAsyncContext *asyncContext = new WriteDataAsyncContext(env);
+    napi_create_string_latin1(env, "WriteNdefData", NAPI_AUTO_LENGTH, &asyncContext->resourceName_);
     asyncContext->writtenNdefData_ = inputWrittenNdefData;
 
     asyncContext->executeFunc_ = [&](void* data) -> void {
