@@ -71,7 +71,7 @@ NfcTagClient::~NfcTagClient()
 const char* NfcTagClient::GetErrCodeString(ErrCode code)
 {
     if ((code >= 0) && (code <= NFC_ERR_MAX)) {
-        for (int i = 0; i < sizeof(g_errCodeMap)/sizeof(ErrCodeMap); ++i) {
+        for (int i = 0; i < static_cast<int>(sizeof(g_errCodeMap)/sizeof(ErrCodeMap)); ++i) {
             if (g_errCodeMap[i].code == code) {
                 return g_errCodeMap[i].str;
             }
