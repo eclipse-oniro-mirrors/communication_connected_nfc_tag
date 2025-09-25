@@ -52,7 +52,7 @@ void NapiEvent::EventNotify(AsyncEventData *asyncEvent)
         napi_open_handle_scope(asyncEvent->env_, &scope);
         if (scope == nullptr) {
             HILOGE("scope is nullptr");
-            napi_close_handle_scope(asyncEvent->env_, scope);
+            delete asyncEvent;
             return;
         }
         napi_value undefine;
