@@ -147,7 +147,7 @@ ErrCode NfcTagStub::OnRegisterCallback(uint32_t code, MessageParcel &data, Messa
         reply.WriteInt32(NFC_NO_OBJECT);
         return NFC_NO_OBJECT;
     }
-    sptr<INfcTagCallback> listener = iface_cast<NfcTagCallBackProxy>(object);
+    sptr<INfcTagCallback> listener = iface_cast<INfcTagCallback>(object);
     if (listener == nullptr) {
         HILOGE("listener is nullptr");
         reply.WriteInt32(NFC_NO_CALLBACK);
@@ -166,7 +166,7 @@ ErrCode NfcTagStub::OnUnRegisterCallback(uint32_t code, MessageParcel &data, Mes
         reply.WriteInt32(NFC_NO_OBJECT);
         return NFC_NO_OBJECT;
     }
-    sptr<INfcTagCallback> listener = iface_cast<NfcTagCallBackProxy>(object);
+    sptr<INfcTagCallback> listener = iface_cast<INfcTagCallback>(object);
     if (listener == nullptr) {
         HILOGE("listener is nullptr");
         reply.WriteInt32(NFC_NO_CALLBACK);
