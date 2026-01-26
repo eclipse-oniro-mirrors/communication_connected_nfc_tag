@@ -64,10 +64,9 @@ napi_value ReadNdefTag(napi_env env, napi_callback_info info)
     size_t argc = ARGC_TWO;
     napi_value argv[ARGC_TWO];
     napi_value thisVar = nullptr;
-    void *data = nullptr;
-    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, &data));
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr));
     HILOGI("argc = %{public}zu", argc);
-    if (argc >= ARGC_TWO || data == nullptr) {
+    if (argc >= ARGC_TWO) {
         CheckNfcStatusCodeAndThrow(env, NFC_INVALID_PARAMETER);
         return CreateUndefined(env);
     }
@@ -101,10 +100,9 @@ napi_value WriteNdefTag(napi_env env, napi_callback_info info)
     size_t argc = ARGC_TWO;
     napi_value argv[ARGC_TWO];
     napi_value thisVar = nullptr;
-    void *data = nullptr;
-    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, &data));
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr));
     HILOGI("argc = %{public}zu", argc);
-    if (argc > ARGC_TWO || argc == 0 || data == nullptr) {
+    if (argc > ARGC_TWO || argc == 0) {
         CheckNfcStatusCodeAndThrow(env, NFC_INVALID_PARAMETER);
         return CreateUndefined(env);
     }
@@ -154,10 +152,9 @@ napi_value ReadNdefData(napi_env env, napi_callback_info info)
     size_t argc = ARGC_TWO;
     napi_value argv[ARGC_TWO];
     napi_value thisVar = nullptr;
-    void *data = nullptr;
-    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, &data));
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr));
     HILOGI("argc = %{public}zu", argc);
-    if (argc >= ARGC_TWO || data == nullptr) {
+    if (argc >= ARGC_TWO) {
         CheckNfcStatusCodeAndThrow(env, NFC_INVALID_PARAMETER);
         return CreateUndefined(env);
     }
@@ -190,10 +187,9 @@ napi_value WriteNdefData(napi_env env, napi_callback_info info)
     size_t argc = ARGC_TWO;
     napi_value argv[ARGC_TWO];
     napi_value thisVar = nullptr;
-    void *data = nullptr;
-    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, &data));
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr));
     HILOGI("argc = %{public}zu", argc);
-    if (argc > ARGC_TWO || argc == 0 || data == nullptr) {
+    if (argc > ARGC_TWO || argc == 0) {
         CheckNfcStatusCodeAndThrow(env, NFC_INVALID_PARAMETER);
         return CreateUndefined(env);
     }
